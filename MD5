@@ -1,10 +1,10 @@
-623ec6bc9cd88c2c877f9f105822f3d9 *DESCRIPTION
+9922107dbb59884bd56b7f9859cdb8eb *DESCRIPTION
 d068bba23dead11469c3e64f932288f1 *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-15834bba7ac70eff6dd53a67ed6900ca *R/framework.R
+dc4054d3271991941edbc2649a4dc1ca *R/framework.R
 328d321e48cfa57194b9dec9e3030446 *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
-bd818355ac6213b48fd3574e21f5f934 *README.md
+1083808bd920936171a363f7918e8700 *README.md
 17d5b10f037a3504e93bfdd299f4763e *inst/tests/performance.R
 cb1400c80bf9c4765fefe5df11e45805 *inst/tests/test_dispatching.R
 c98604b3f2e447bd5f52321d1068ff25 *inst/tests/test_ellipsis_arguments.R
@@ -41,6 +41,6 @@ c6c8fe9189580c87fe3e35b0de73365b *inst/unitTests/runit.types.1.R
 e4c8f8ac2414c8099153c2da188c3fab *man/duck.Rd
 e2811bfe170c8125809803b3bd4268e7 *man/framework.Rd
 b71601130b019258c48e13abbbe73c48 *man/introspection.Rd
-aaecb4518c9b6b5f8a216ccd76d21188 *man/lambda.r-package.Rd
+cb8084070cb4f237a3f8a0318b95ca6c *man/lambda.r-package.Rd
 8e4fcf20f64e5f762f1e52d089e32ee9 *tests/doRUnit.R
 b86a091001610da3a28cc755fec12798 *tests/run_tests.R.old
