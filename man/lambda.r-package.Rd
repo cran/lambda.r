@@ -18,8 +18,8 @@ can be accessed using a convenient syntax to reduce type clutter.
 \tabular{ll}{
 Package: \tab lambda.r\cr
 Type: \tab Package\cr
-Version: \tab 1.1.0-3\cr
-Date: \tab 2013-01-21\cr
+Version: \tab 1.1.1-2\cr
+Date: \tab 2013-03-03\cr
 License: \tab LGPL-3\cr
 LazyLoad: \tab yes\cr
 }
