@@ -1,7 +1,7 @@
-9922107dbb59884bd56b7f9859cdb8eb *DESCRIPTION
+5652e155157057689917bd33da119491 *DESCRIPTION
 d068bba23dead11469c3e64f932288f1 *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-dc4054d3271991941edbc2649a4dc1ca *R/framework.R
+6256fba6a495ce8361bb6ed74ebb0859 *R/framework.R
 328d321e48cfa57194b9dec9e3030446 *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
 1083808bd920936171a363f7918e8700 *README.md
@@ -17,8 +17,8 @@ c98604b3f2e447bd5f52321d1068ff25 *inst/tests/test_ellipsis_arguments.R
 97ceabf07d26fc1d390ed1bff9cceb55 *inst/unitTests/runit.auto_replace.1.R
 225c406a39eb8f4318e19ac356ee5bd6 *inst/unitTests/runit.auto_replace.2.R
 0e382f059b346b22f83b9dad307d3569 *inst/unitTests/runit.auto_replace.3.R
-ff8d7681d840ecf9e000718f84e2ecb6 *inst/unitTests/runit.dispatching.1.R
-59e900cfad7abac80a13d6d464f012e5 *inst/unitTests/runit.ellipsis_arguments.1.R
+c8495d51242bd4407ae3d01952a8decd *inst/unitTests/runit.dispatching.1.R
+66fc3ac59a85c97a7719fd76fdede470 *inst/unitTests/runit.ellipsis_arguments.1.R
 b5b237a79539f6193a3dcfe4e2216aa9 *inst/unitTests/runit.ellipsis_arguments.2.R
 cb96ac32893792bd0fc5522e1d7deff6 *inst/unitTests/runit.examples.R
 f51390873d9ace14ff2c3c55a0867d35 *inst/unitTests/runit.factorial.1.R
@@ -41,6 +41,6 @@ c6c8fe9189580c87fe3e35b0de73365b *inst/unitTests/runit.types.1.R
 e4c8f8ac2414c8099153c2da188c3fab *man/duck.Rd
 e2811bfe170c8125809803b3bd4268e7 *man/framework.Rd
 b71601130b019258c48e13abbbe73c48 *man/introspection.Rd
-cb8084070cb4f237a3f8a0318b95ca6c *man/lambda.r-package.Rd
+af2f94a4f6c7716fa261dc584921fd66 *man/lambda.r-package.Rd
 8e4fcf20f64e5f762f1e52d089e32ee9 *tests/doRUnit.R
 b86a091001610da3a28cc755fec12798 *tests/run_tests.R.old
