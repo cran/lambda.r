@@ -14,25 +14,43 @@ describe(fn, idx) %when% {
 
 seal(describe)
 
+# TODO: Use options to manage this. Looks like environments hash names.
+# lambda.r.debug <- environment()
 debug.lr <- function(x)
 {
   name <- deparse(substitute(x))
-  attr(x,'debug') <- TRUE
-  assign(name,x,inherits=TRUE)
-  # Need to think about how to do this efficiently for package functions
-  #debugs <- c(getOption("lambda.r.debug"), name)
-  #options(lambda.r.debug=debugs)
+  os <- getOption('lambdar.debug')
+  if (is.null(os)) os <- list()
+
+  os[[name]] <- TRUE
+  options(lambdar.debug=os)
+
+  if (! any(c('lambdar.fun','lambdar.type') %in% class(x)))
+    return(debug(x))
+  invisible()
 }
 
 undebug.lr <- function(x)
 {
   name <- deparse(substitute(x))
-  attr(x,'debug') <- FALSE
-  assign(name,x,inherits=TRUE)
-  # Need to think about how to do this efficiently for package functions
-  #debugs <- c(getOption("lambda.r.debug"), name)
-  #debug <- debugs[debugs != name]
-  #options(lambda.r.debug=debugs)
+  os <- getOption('lambdar.debug')
+  if (is.null(os)) return(invisible())
+
+  os[[name]] <- NULL
+  options(lambdar.debug=os)
+
+  if (! any(c('lambdar.fun','lambdar.type') %in% class(x)))
+    return(undebug(x))
+  invisible()
+}
+
+is.debug <- function(fn.name) {
+  os <- getOption('lambdar.debug')
+  fn.name %in% names(os)
+}
+
+which.debug <- function() {
+  names(getOption('lambdar.debug'))
 }
 
 print.lambdar.fun <- function(x, ...)
