@@ -9,8 +9,7 @@ is.bound <- function(name) {
 }
 
 # f(a,b) %::% A : B : C
-'%::%' <- function(signature, types)
-{
+'%::%' <- function(signature, types) {
   os <- options(keep.source=TRUE)
   s.expr <- paste(deparse(substitute(signature)), collapse="\n")
   t.expr <- paste(deparse(substitute(types)), collapse="\n")
@@ -40,8 +39,7 @@ is.bound <- function(name) {
 # f(a,0) %when% { a < 5; a > 0 } %as% { z <- a + 2; z * 2 }
 # f(a,b) %when% { a < 0 } %as% { abs(a) + b }
 # f(a,b) %as% { a + b }
-'%as%' <- function(signature, body)
-{
+'%as%' <- function(signature, body) {
   os <- options(keep.source=TRUE)
   s.expr <- paste(deparse(substitute(signature)), collapse="\n")
   b.expr <- paste(deparse(substitute(body)), collapse="\n")
@@ -57,23 +55,28 @@ is.bound <- function(name) {
   if (is.bound(name))
     stop("Function name is already bound to non lambda.r object")
 
+  where <- get_function_env()
+  #cat(sprintf("Function env for %s is\n", name))
+  #print(where)
+  #cat("\n")
+
   if (nrow(args_expr) > 1)
     tree$args <- args_expr[2:nrow(args_expr),]
   guard_expr <- parse_guard(it)
   guard_expr <- transform_attrs(guard_expr)
   if (!is.null(tree$args))
-    tree$guard <- guard_fn(tree$args, guard_expr)
+    tree$guard <- guard_fn(tree$args, guard_expr, where)
 
   body_expr <- parse_body(it)
   body_expr <- transform_attrs(body_expr)
-  tree$def <- body_fn(tree$args, body_expr)
+  tree$def <- body_fn(tree$args, body_expr, where)
   tree$signature <- s.expr
   tree$body <- b.expr
   tree$ellipsis <- idx_ellipsis(tree)
   tree$fill.tokens <- clean_tokens(tree)
   tree$fill.defaults <- clean_defaults(tree)
 
-  add_variant(name, tree)
+  add_variant(name, tree, where)
   options(keep.source=os$keep.source)
   invisible()
 }
@@ -124,6 +127,7 @@ NewObject <- function(type.fn,type.name, ...)
 # 0.372   0.003   0.376
 # 0.347   0.001   0.347
 # 0.305   0.000   0.305
+# 0.238   0.000   0.238
 UseFunction <- function(fn,fn.name, ...)
 {
   result <- NULL
@@ -155,26 +159,26 @@ UseFunction <- function(fn,fn.name, ...)
   if (is.null(matched.fn))
     stop(use_error(.ERR_USE_FUNCTION,fn.name,raw.args))
 
-  # u:0.058 s:0.006
-  if (is.debug(fn.name)) debug(matched.fn)
   result <- do.call(matched.fn, full.args)
 
   if (!is.null(full.type))
   {
-    return.type <- return_type(full.type, full.args)
-    if (return.type == '.lambda.r_UNIQUE')
-    {
-      act <- paste(class(result), collapse=', ')
-      first <- class(result)[1]
+    result.class <- class(result)
+    return.type <- return_type(full.type, full.args, result.class)
+    if ('integer' %in% result.class) result.class <- c(result.class, 'numeric')
+
+    if (return.type == '.') {
+      NULL
+    } else if (return.type == '.lambda.r_UNIQUE') {
+      act <- paste(result.class, collapse=', ')
+      first <- result.class[1]
       if (first %in% sapply(raw.args, class)) {
         msg <- sprintf("Expected unique return type but found '%s' for",first)
         stop(use_error(msg,fn.name,raw.args))
       }
-    }
-    else if (!return.type %in% class(result))
-    {
+    } else if (!return.type %in% result.class) {
       exp <- return.type
-      act <- paste(class(result), collapse=', ')
+      act <- paste(result.class, collapse=', ')
       msg <- sprintf("Expected '%s' as return type but found '%s' for",exp,act)
       stop(use_error(msg,fn.name,raw.args))
     }
@@ -202,103 +206,207 @@ clean_defaults <- function(tree) {
     tree$args$default[-tree$ellipsis]
 }
 
-#fill_args <- function(raw.args, args, ellipsis)
-fill_args <- function(raw.args, tokens, defaults, ellipsis)
+# rm(list=ls()); detach('package:lambda.r', unload=TRUE); library(lambda.r)
+fill_args <- function(params, tokens, defaults, idx.ellipsis)
 {
-  if (is.null(args)) return(list())
+  args <- list()
+  if (is.null(params) && all(is.na(defaults))) return(args)
 
-  # This is for unnamed arguments
-  if (is.null(names(raw.args)))
-  {
-    if (length(raw.args) >= length(defaults)) return(raw.args)
-    ds <- defaults[(length(raw.args)+1):length(defaults)]
-    vs <- lapply(ds, function(x) eval(parse(text=x)))
-    names(vs) <- NULL
-    c(raw.args, vs)
+  # Skip parameters that don't coincide with the expected tokens
+  param.names <- names(params)
+  if (!is.null(param.names) &&
+      !all(param.names[nchar(param.names) > 0] %in% tokens) && 
+      length(idx.ellipsis) == 0) return(NULL)
+
+  # Initialize arguments with NA
+  arg.length <- max(length(tokens), length(defaults)) + length(idx.ellipsis)
+  if (arg.length == 0) return(args)
+
+  idx.concrete <- idx.args <- 1:arg.length
+  if (length(idx.ellipsis) > 0)
+    idx.concrete <- idx.args[-idx.ellipsis]
+  names(idx.concrete) <- tokens
+  args[idx.args] <- NA
+  names(args)[idx.concrete] <- tokens
+
+  # Populate named arguments
+  named.params <- param.names[param.names %in% tokens]
+  args[named.params] <- params[named.params]
+
+  # Catalog named and unnamed arguments
+  if (length(params) > 0) {
+    idx.params <- 1:length(params)
+    names(idx.params) <- names(params)
+    if (is.null(named.params) || length(named.params) < 1) {
+      idx.p.named <- integer()
+      idx.p.unnamed <- idx.params
+      idx.a.named <- integer()
+      idx.a.unnamed <- idx.concrete
+    } else {
+      idx.p.named <- idx.params[named.params]
+      idx.p.unnamed <- idx.params[-idx.p.named]
+      idx.a.named <- idx.concrete[named.params]
+      idx.a.unnamed <- idx.concrete[-idx.a.named]
+    }
+
+    if (length(idx.ellipsis) > 0) {
+      # Choose only required arguments
+      idx.required <- idx.concrete[is.na(defaults)]
+      idx.required <- idx.required[!idx.required %in% idx.a.named]
+
+      # Set arguments before ellipsis
+      idx.left <- idx.required[idx.required < idx.ellipsis]
+      args[idx.left] <- params[idx.p.unnamed[1:length(idx.left)]]
+
+      idx.right <- idx.required[idx.required > idx.ellipsis]
+      args[idx.right] <- params[tail(idx.p.unnamed, length(idx.right))]
+
+      # Fill the ellipsis with the remainder
+      orphans <- c(idx.p.named, idx.left, idx.right)
+      if (length(orphans) == 0) {
+        args[[idx.ellipsis]] <- params
+      } else {
+        args[[idx.ellipsis]] <- params[-orphans]
+      }
+    } else if (length(idx.p.unnamed) > 0) {
+        args[idx.a.unnamed[1:length(idx.p.unnamed)]] <- params[idx.p.unnamed]
+    }
   }
-  else
-  {
-    if (length(ellipsis) == 0 && any(! names(raw.args) %in% c("",tokens))) 
-      return(NULL)
-    ds <- lapply(defaults, function(x) x)
-    names(ds) <- tokens
-    shim <- tokens[1:length(raw.args)]
-    names(raw.args)[names(raw.args) == ""] <- shim[names(raw.args) == '']
-    ds[names(raw.args)] <- raw.args
-    gaps <- ! names(ds) %in% names(raw.args)
-    ds[gaps] <- lapply(ds[gaps], function(x) eval(parse(text=x)))
-    ds
+
+  # Apply default values to unset optional arguments
+  if (!is.null(defaults)) {
+    idx.optional <- idx.concrete[is.na(args[idx.concrete]) & !is.na(defaults)]
+    if (length(idx.ellipsis) > 0) {
+      idx.defaults <- ifelse(idx.optional >= idx.ellipsis,
+        idx.optional - 1,
+        idx.optional)
+    } else {
+      idx.defaults <- idx.optional
+    }
+    args[idx.optional] <- lapply(idx.defaults, 
+      function(idx) eval(parse(text=defaults[idx]), list2env(args)))
+  }
+
+  if (length(idx.ellipsis) > 0) {
+    names(args)[idx.ellipsis] <- ''
+    #args <- c(args[-idx.ellipsis],unlist(args[idx.ellipsis], recursive=FALSE))
+    args <- c(args[idx.args < idx.ellipsis],
+      unlist(args[idx.ellipsis], recursive = FALSE),
+      args[idx.args > idx.ellipsis])
+  }
+  args
+}
+
+
+# Return the index of the ellipsis argument or an empty vector otherwise
+has_ellipsis <- function(declared.types) {
+  idx <- 1:length(declared.types)
+  val <- sapply(declared.types, 
+    function(x) any(grep('...', x, fixed=TRUE) > 0))
+  idx[val]
+}
+
+update_type_map <- function(type.map, the.type, arg.type) {
+  if (is.null(type.map[[the.type]])) {
+    if (any(arg.type %in% type.map))
+      # This forces a failure in the type check later on
+      type.map[[the.type]] <- paste("!",arg.type,sep='')
+    else
+      # Add the new type if it doesn't exist
+      type.map[[the.type]] <- arg.type
+  }
+  type.map
+}
+
+strip_ellipsis <- function(the.type) {
+  sub('...','',the.type, fixed=TRUE)
+}
+
+# Used internally to determine the declared type based on its
+# value and corresponding argument type.
+dereference_type <- function(declared.types, arg.types) {
+  type.map <- list()
+  len.delta <- length(arg.types) - length(declared.types) + 1
+
+  # Check for type variables (can only be a-z)
+  fn <- function(x) {
+    the.type <- declared.types[[x]]
+    if (the.type == '.')
+      return(arg.types[[x]])
+    else if (the.type == '...') 
+      return(arg.types[x + 0:len.delta])
+    else if (the.type %in% letters) {
+      type.map <<- update_type_map(type.map, the.type, arg.types[[x]])
+      return(type.map[[the.type]])
+    }
+    else if (any(grep('[a-z]\\.\\.\\.', the.type) > 0)) {
+      the.type <- strip_ellipsis(the.type)
+      type.map <<- update_type_map(type.map, the.type, arg.types[[x]])
+      return(rep(type.map[[the.type]], len.delta + 1))
+    }
+    else if (any(grep('[a-zA-Z0-9._]+\\.\\.\\.', the.type) > 0)) {
+      the.type <- strip_ellipsis(the.type)
+      return(rep(the.type, len.delta + 1))
+    }
+    # Default
+    the.type
   }
 }
+
 
 # Validate arguments against types
 check_types <- function(raw.types, raw.args)
 {
   if (is.null(raw.types)) return(TRUE)
   declared.types <- raw.types$types$text
-  if (nrow(raw.types$types) - 1 != length(raw.args)) return(FALSE)
-  arg.types <- sapply(raw.args, function(x) class(x))
+  idx.ellipsis <- has_ellipsis(declared.types)
+  if (length(idx.ellipsis) == 0 &&
+      nrow(raw.types$types) - 1 != length(raw.args)) return(FALSE)
 
-  idx <- 1:length(raw.args)
+  arg.fn <- function(x) {
+    cl <- class(x)
+    if ('integer' %in% cl) cl <- c(cl, 'numeric')
+    cl
+  }
+  arg.types <- lapply(raw.args, arg.fn)
 
-  # Check for type variables (can only be a-z)
-  type.map <- list()
-  if (any(declared.types %in% letters)) {
-    fn <- function(x) {
-      the.type <- declared.types[x]
-      if (! the.type %in% letters) return(the.type)
-
-      if (is.null(type.map[[the.type]])) {
-        if (any(arg.types[[x]] %in% type.map))
-          type.map[[the.type]] <<- paste("!",arg.types[[x]],sep='')
-        # Add the new type if it doesn't exist
-        else
-          type.map[[the.type]] <<- arg.types[[x]]
-      }
-
-      # Now use the map to fill in the declared type
-      type.map[[the.type]]
-    }
-    declared.types <- sapply(1:(length(declared.types)-1), fn)
+  fn <- dereference_type(declared.types, arg.types)
+  declared.types <- lapply(1:(length(declared.types)-1), fn)
+  if (length(idx.ellipsis) > 0) {
+    idx.declared <- 1:length(declared.types)
+    declared.types <- c(
+      declared.types[idx.declared[idx.declared < idx.ellipsis]],
+      unlist(declared.types[idx.ellipsis], recursive=FALSE),
+      declared.types[idx.declared[idx.declared > idx.ellipsis]]
+    )
   }
 
-  if (!is.null(ncol(arg.types)) && ncol(arg.types) > 0)
-    all(sapply(idx, function(x) any(declared.types[[x]] %in% arg.types[,x])))
-  else
-    all(sapply(idx, function(x) any(declared.types[[x]] %in% arg.types[[x]])))
+  idx <- 1:length(raw.args)
+  all(sapply(idx, function(x) any(declared.types[[x]] %in% arg.types[[x]])))
 }
+
+
 
 # Get the return type of a function declaration. This is aware of type
 # variables.
-return_type <- function(raw.types, raw.args)
+# TODO: Make this more efficient using information computed
+# by check_types.
+return_type <- function(raw.types, raw.args, result.class)
 {
   declared.types <- raw.types$types$text
-  if (nrow(raw.types$types) - 1 != length(raw.args)) return(MissingReturnType)
-  arg.types <- sapply(raw.args, function(x) class(x))
+  if (! has_ellipsis(declared.types) &&
+      nrow(raw.types$types) - 1 != length(raw.args)) return(MissingReturnType)
 
-  idx <- 1:length(raw.args)
+  arg.types <- lapply(raw.args, function(x) class(x))
 
   # Check for type variables (can only be a-z)
   ret.type <- declared.types[length(declared.types)]
-  type.map <- list()
   if (ret.type %in% letters) {
-    fn <- function(x) {
-      the.type <- declared.types[x]
-      if (! the.type %in% letters) return(the.type)
-
-      if (is.null(type.map[[the.type]])) {
-        if (arg.types[[x]] %in% type.map)
-          type.map[[the.type]] <<- paste("!",arg.types[[x]],sep='')
-        # Add the new type if it doesn't exist
-        else
-          type.map[[the.type]] <<- arg.types[[x]]
-      }
-    }
+    fn <- dereference_type(declared.types, c(arg.types,result.class))
     sapply(1:(length(declared.types)-1), fn)
-    ret.type <- type.map[[ret.type]]
+    ret.type <- fn(length(declared.types))
     if (is.null(ret.type)) ret.type <- ".lambda.r_UNIQUE"
   }
-  ret.type
   # Use Function as a proxy for function
   gsub('\\bFunction\\b','function',ret.type, perl=TRUE)
 }
@@ -460,7 +568,8 @@ parse_guard <- function(it)
     {
       if (line$token %in% c("'{'"))
         stop("Invalid symbol '",line$text,"'in function definition")
-      if (line$token %in% c('expr',"','")) next
+      #if (line$token %in% c('expr',"','")) next
+      if (line$token %in% c('expr')) next
       guards <- rbind(guards, line)
     }
     #while (!is.na(line <- it()) && line$token != "SPECIAL") next
@@ -470,7 +579,7 @@ parse_guard <- function(it)
   guards[,c('line1','token','text')]
 }
 
-guard_fn <- function(raw.args, tree)
+guard_fn <- function(raw.args, tree, where)
 {
   lines <- NULL
   # Add any pattern matches
@@ -483,7 +592,9 @@ guard_fn <- function(raw.args, tree)
       else if (patterns$pattern[x] == 'NA')
         paste("is.na(", patterns$token[x],")", sep='')
       else if (patterns$pattern[x] == 'EMPTY')
-        paste("length(", patterns$token[x],") == 0", sep='')
+        paste("length(", patterns$token[x],") == 0 || ",
+          "(!is.null(dim(",patterns$token[x],")) && ",
+          "nrow(",patterns$token[x],") == 0)" , sep='')
       else 
         paste(patterns$token[x],'==',patterns$pattern[x], sep=' ')
     }
@@ -503,7 +614,7 @@ guard_fn <- function(raw.args, tree)
   body <- paste(lines, collapse=' & ')
   arg.string <- paste(raw.args$token, collapse=',')
   fn.string <- sprintf("function(%s) { %s }", arg.string, body)
-  eval(parse(text=fn.string))
+  eval(parse(text=fn.string), where)
 }
 
 # A parse transform to change object@attribute to attr(object,'attribute')
@@ -575,7 +686,7 @@ parse_body <- function(it)
 }
 
 
-body_fn <- function(raw.args, tree)
+body_fn <- function(raw.args, tree, where)
 {
   if (tree$token[1] == "'{'") tree <- tree[2:(nrow(tree)-1), ]
   lines <- NULL
@@ -595,7 +706,7 @@ body_fn <- function(raw.args, tree)
   else
     arg.string <- paste(raw.args$token, collapse=',')
   fn.string <- sprintf("function(%s) { %s }", arg.string, body)
-  eval(parse(text=fn.string))
+  eval(parse(text=fn.string), where)
 }
 
 parse_types <- function(it, args, sig)
@@ -628,21 +739,25 @@ from_root_env <- function(frames)
   length(frames) < 3
 }
 
-add_variant <- function(fn.name, tree)
+add_variant <- function(fn.name, tree, where)
 {
-  frames <- sys.frames()
-
-  if (from_root_env(frames)) where <- topenv(parent.frame(2))
-  else
-  {
-    #if ('lambda.r_temp_env' %in% search())
-    #  detach('lambda.r_temp_env', character.only=TRUE)
-    my.call <- sys.calls()[[length(frames)-2]]
-    where <- target_env(my.call, length(frames))
+  #cat("NOTE: Environment for",fn.name,"is\n", sep=' ')
+  #print(sprintf("NOTE: Environment for %s is",fn.name))
+  #print(where)
+  env <- capture.output(str(as.environment(where), give.attr=FALSE))
+  if (! is.null(tree$def)) {
+    attr(tree$def,'topenv') <- env
+    attr(tree$def,'name') <- fn.name
+  } else {
+    cat("NOTE: Empty body definition encountered for",tree$signature,"\n")
   }
 
   setup_parent(fn.name, where)
   fn <- get(fn.name, where)
+  #cat(sprintf("The parent.env(%s) is\n", fn.name))
+  #print(parent.env(environment(fn)))
+  #cat("\n")
+
   variants <- attr(fn,'variants')
   active.type <- attr(fn,'active.type')
   args <- NULL
@@ -670,6 +785,7 @@ add_variant <- function(fn.name, tree)
 
   assign(fn.name, fn, where)
   #if (! from_root_env(frames)) attach(where, name='lambda.r_temp_env')
+  .sync_debug(fn.name)
   invisible()
 }
 
@@ -699,11 +815,16 @@ has_variant <- function(variants, args, guard=NULL, active.type=NULL)
     arg.len <- ifelse(is.null(args), 0, nrow(args))
     if (var.len != arg.len) return(NA)
     if (var.len == 0) return (x)
+
     if (!is.null(v$guard) || !is.null(guard)) {
       if (!is.null(v$guard) && is.null(guard)) return(NA)
       if (is.null(v$guard) && !is.null(guard)) return(NA)
-      if (!all(deparse(v$guard) == deparse(guard)) ) return(NA)
+      dv <- deparse(v$guard)
+      dg <- deparse(guard)
+      if (length(dv) != length(dg)) return(NA)
+      if (!all(deparse(v$guard) == deparse(guard))) return(NA)
     }
+
     args$pattern[is.na(args$pattern)] <- ".lambdar_NA" 
     v$args$pattern[is.na(v$args$pattern)] <- ".lambdar_NA"
     ifelse(all(v$args[,keys] == args[,keys]),x, NA)
@@ -793,30 +914,32 @@ setup_parent <- function(parent, where)
     if ((!is.null(is.final) && is.final == TRUE) ||
         (! any(c('lambdar.fun','lambdar.type') %in% class(parent.def))) )
     {
-      parent.def <- init_function(parent)
+      parent.def <- init_function(parent, where)
       assign(parent, parent.def, where)
     }
   }
   else
   {
-    parent.def <- init_function(parent)
+    parent.def <- init_function(parent, where)
     assign(parent, parent.def, where)
   }
 }
 
-init_function <- function(name)
+init_function <- function(name, where)
 {
   if (is.type(name)) 
     pattern <- 'function(...) NewObject(%s,"%s",...)'
   else
     pattern <- 'function(...) UseFunction(%s,"%s",...)'
-  fn <- eval(parse(text=sprintf(pattern,name,name)))
+  fn <- eval(parse(text=sprintf(pattern,name,name)), where)
   if (is.type(name))
-    attr(fn, 'class') <- c('lambdar.type',attr(fn,'class'))
+    attr(fn, 'class') <- c('lambdar.type', 'function')
   else
-    attr(fn, 'class') <- c('lambdar.fun',attr(fn,'class'))
+    attr(fn, 'class') <- c('lambdar.fun', 'function')
   attr(fn, 'variants') <- list()
   attr(fn, 'types') <- list()
+  #print(sprintf("Parent.env(%s) is", name))
+  #print(parent.env(environment(fn)))
   fn
 }
 
@@ -869,6 +992,23 @@ really_get <- function(x)
   get(x, frames[frame.idx[length(frame.idx)]])
 }
 
+get_function_env <- function() {
+  frames <- sys.frames()
+
+  if (from_root_env(frames)) {
+    #print("Assuming in root environment")
+    where <- topenv(parent.frame(2))
+  } else {
+    #print("Getting target environment from call stack")
+    #if ('lambda.r_temp_env' %in% search())
+    #  detach('lambda.r_temp_env', character.only=TRUE)
+    my.call <- sys.calls()[[length(frames)-2]]
+    where <- target_env(my.call, length(frames))
+  }
+  where
+}
+
+
 # Get the target env for the function definition. Normally this would be
 # just traversing the frame stack, but we need to add special logic to
 # handle eval() calls with an explicit environment.
@@ -880,13 +1020,14 @@ target_env <- function(head.call, frame.length)
 
   # 3 is a magic number based on the lambda.r call stack to this function
   stack.depth <- 3
-  top.frame <- topenv(parent.frame(stack.depth))
-  if (args$token[1] != 'eval') return(top.frame)
+  top.env <- topenv(parent.frame(stack.depth))
+  if (args$token[1] != 'eval') return(top.env)
 
   eval.frame <- sys.frame(frame.length-stack.depth)
   lambda.r_temp_env <- tryCatch(get('envir', envir=eval.frame),
-    error=function(e) { cat("WARNING: Falling back to top.frame\n"); top.frame})
+    error=function(e) stop("Unable to extract envir in eval frame\n"))
 
+  #cat("NOTE: Using lambda.r_temp_env for",parsed.call[1,'token'],"\n", sep=' ')
   lambda.r_temp_env
 }
 
@@ -935,5 +1076,14 @@ parse_eval <- function(it, raw=NULL)
     token <- c(token, line$text)
   }
   out
+}
+
+.sync_debug <- function(fn.name) {
+  os <- getOption('lambdar.debug')
+  if (is.null(os)) return(invisible())
+
+  os[[fn.name]] <- NULL
+  options(lambdar.debug=os)
+  invisible()
 }
 

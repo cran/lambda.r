@@ -11,11 +11,9 @@ describe(fn, idx) %when% {
   if (idx > length(variants)) stop("Invalid index specified")
   variants[[idx]]$def
 }
-
 seal(describe)
 
-# TODO: Use options to manage this. Looks like environments hash names.
-# lambda.r.debug <- environment()
+
 debug.lr <- function(x)
 {
   name <- deparse(substitute(x))
@@ -27,12 +25,20 @@ debug.lr <- function(x)
 
   if (! any(c('lambdar.fun','lambdar.type') %in% class(x)))
     return(debug(x))
+
+  variants <- attr(x,'variants')
+  sapply(variants, function(v) debug(v$def))
   invisible()
 }
 
 undebug.lr <- function(x)
 {
-  name <- deparse(substitute(x))
+  if (is.function(x)) {
+    name <- deparse(substitute(x))
+  } else {
+    name <- x
+    x <- get(x, parent.frame(), inherits=TRUE)
+  }
   os <- getOption('lambdar.debug')
   if (is.null(os)) return(invisible())
 
@@ -41,6 +47,15 @@ undebug.lr <- function(x)
 
   if (! any(c('lambdar.fun','lambdar.type') %in% class(x)))
     return(undebug(x))
+
+  variants <- attr(x,'variants')
+  sapply(variants, function(v) undebug(v$def))
+  invisible()
+}
+
+#' Undebug all registered functions
+undebug.all <- function() {
+  sapply(which.debug(), undebug.lr)
   invisible()
 }
 
