@@ -1,7 +1,7 @@
-09a9668489d4e99f8eb62923753e53ca *DESCRIPTION
+edf74bef85ac9d7494173b1e5941ca6f *DESCRIPTION
 2541a2e63fe6bc283b18ff9eec37122b *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-ca4c89d3bab9ebceb6b7cddb64186848 *R/framework.R
+ecdf02d94dc6541ef40ec666f9c9e68b *R/framework.R
 adac14153bc41e3607ed9dec5da7830a *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
 97ceabf07d26fc1d390ed1bff9cceb55 *inst/unitTests/runit.auto_replace.1.R
@@ -35,5 +35,5 @@ a2c77e08d37644ae9f2ad53a00a487de *man/UseFunction.Rd
 7954e4e489368550f3b029ae69756bc3 *man/duck.Rd
 7ed5820d3134d7d8e93ca02257b8af1b *man/framework.Rd
 ad73256313b25f4a7ab5079204872ebd *man/introspection.Rd
-e486a50be7811af260a9ec5d91e74d4b *man/lambda.r-package.Rd
+02e55615d8959b995032d4ef3e5eef91 *man/lambda.r-package.Rd
 8e4fcf20f64e5f762f1e52d089e32ee9 *tests/doRUnit.R
