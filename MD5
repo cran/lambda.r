@@ -1,7 +1,7 @@
-edf74bef85ac9d7494173b1e5941ca6f *DESCRIPTION
-2541a2e63fe6bc283b18ff9eec37122b *NAMESPACE
+522b07ad4e394663c2d9c15fd2f40add *DESCRIPTION
+ab82d9729386261d282f5fc0d8b3d5f4 *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-ecdf02d94dc6541ef40ec666f9c9e68b *R/framework.R
+7c016c2b35276b2364a9b78613a04ed2 *R/framework.R
 adac14153bc41e3607ed9dec5da7830a *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
 97ceabf07d26fc1d390ed1bff9cceb55 *inst/unitTests/runit.auto_replace.1.R
@@ -22,6 +22,7 @@ d00182c9d7417129db68fc46d62fe471 *inst/unitTests/runit.function_type.1.R
 c72938f7a98c6447fcbd768df14a717e *inst/unitTests/runit.optional_arguments.2.R
 cf791378a6213f7e874142eef8740170 *inst/unitTests/runit.parse_transforms.1.R
 a0f5aa44def62f0c236233fec1212661 *inst/unitTests/runit.parse_transforms.2.R
+37f2bd279ecd0795fb230d1080f8ddba *inst/unitTests/runit.parse_transforms.3.R
 e8be891b03015204266313dd585da349 *inst/unitTests/runit.pattern_matching.R
 a1dfd153edb537cad1b9dc8c7942843d *inst/unitTests/runit.taylor_series.1.R
 d77fa33d1812e5be0b38431731594f41 *inst/unitTests/runit.type_any_type.R
@@ -35,5 +36,5 @@ a2c77e08d37644ae9f2ad53a00a487de *man/UseFunction.Rd
 7954e4e489368550f3b029ae69756bc3 *man/duck.Rd
 7ed5820d3134d7d8e93ca02257b8af1b *man/framework.Rd
 ad73256313b25f4a7ab5079204872ebd *man/introspection.Rd
-02e55615d8959b995032d4ef3e5eef91 *man/lambda.r-package.Rd
+852aa917958ed85a17251526222fae9f *man/lambda.r-package.Rd
 8e4fcf20f64e5f762f1e52d089e32ee9 *tests/doRUnit.R
