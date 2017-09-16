@@ -1,8 +1,8 @@
 Package: lambda.r
 Type: Package
 Title: Modeling Data with Functional Programming
-Version: 1.1.9
-Date: 2016-07-10
+Version: 1.2
+Date: 2017-09-12
 Depends: R (>= 3.0.0)
 Suggests: RUnit
 Author: Brian Lee Yung Rowe
@@ -11,6 +11,6 @@ Description: A language extension to efficiently write functional programs in R.
 License: LGPL-3
 LazyLoad: yes
 NeedsCompilation: no
-Packaged: 2016-07-10 13:33:55 UTC; brian
+Packaged: 2017-09-16 17:33:39 UTC; brian
 Repository: CRAN
-Date/Publication: 2016-07-10 16:30:57
+Date/Publication: 2017-09-16 18:51:43 UTC

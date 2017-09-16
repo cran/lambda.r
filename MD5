@@ -1,7 +1,7 @@
-522b07ad4e394663c2d9c15fd2f40add *DESCRIPTION
-ab82d9729386261d282f5fc0d8b3d5f4 *NAMESPACE
+4e92c39cf64e3824ba4cd11eb898da6e *DESCRIPTION
+ca3a1ecc796004a7df7fff727b9a071a *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-7c016c2b35276b2364a9b78613a04ed2 *R/framework.R
+faad7505b495be721120b590f71a2089 *R/framework.R
 adac14153bc41e3607ed9dec5da7830a *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
 97ceabf07d26fc1d390ed1bff9cceb55 *inst/unitTests/runit.auto_replace.1.R
@@ -14,10 +14,11 @@ cb96ac32893792bd0fc5522e1d7deff6 *inst/unitTests/runit.examples.R
 f51390873d9ace14ff2c3c55a0867d35 *inst/unitTests/runit.factorial.1.R
 080c9faea036e772a4bd4dd02dac65fa *inst/unitTests/runit.factorial.2.R
 253426aaff845e9ffe8525e9c974f9c9 *inst/unitTests/runit.fill_args.R
-9ee9fe941b00e243dff4d603fde446d7 *inst/unitTests/runit.function_args.1.R
+1e71378d1ff9e32ee99992aa92189603 *inst/unitTests/runit.function_args.1.R
 d00182c9d7417129db68fc46d62fe471 *inst/unitTests/runit.function_type.1.R
 65d13a07127f9509f88b624c6d16bb46 *inst/unitTests/runit.heaviside_step.1.R
 979dce6f4f885fee49c796de79ec1ec8 *inst/unitTests/runit.heaviside_step.2.R
+9dfabd92c09733909552ad26bccd8fc0 *inst/unitTests/runit.infix.1.R
 9a61eb814b14d27344b3754263c153a0 *inst/unitTests/runit.optional_arguments.1.R
 c72938f7a98c6447fcbd768df14a717e *inst/unitTests/runit.optional_arguments.2.R
 cf791378a6213f7e874142eef8740170 *inst/unitTests/runit.parse_transforms.1.R
@@ -34,7 +35,7 @@ ae772e8e2067de9da0b2b65d49d6afe8 *inst/unitTests/runit.type_functions.R
 c6c8fe9189580c87fe3e35b0de73365b *inst/unitTests/runit.types.1.R
 a2c77e08d37644ae9f2ad53a00a487de *man/UseFunction.Rd
 7954e4e489368550f3b029ae69756bc3 *man/duck.Rd
-7ed5820d3134d7d8e93ca02257b8af1b *man/framework.Rd
+c6780ccc995ee695572bc53982194816 *man/framework.Rd
 ad73256313b25f4a7ab5079204872ebd *man/introspection.Rd
-852aa917958ed85a17251526222fae9f *man/lambda.r-package.Rd
+9ab04d13bf4d3335d155e358ec28b7f7 *man/lambda.r-package.Rd
 8e4fcf20f64e5f762f1e52d089e32ee9 *tests/doRUnit.R
