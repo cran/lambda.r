@@ -143,6 +143,8 @@ NewObject <- function(type.fn,type.name, ...)
 # 0.238   0.000   0.238
 UseFunction <- function(fn,fn.name, ...)
 {
+  # If user has added more definitions, attempt to access it
+  fn <- tryCatch(get_lr(fn.name), error=function(e) fn)
   result <- NULL
   # u:0.007 s:0.002
   raw.args <- list(...)
@@ -737,7 +739,9 @@ body_fn <- function(raw.args, tree, where)
     arg.string <- ''
   else
     arg.string <- paste(raw.args$token, collapse=',')
-  fn.string <- sprintf("function(%s) { %s }", arg.string, body)
+  fn.string <- tidy_source(
+    text=sprintf("function(%s) { %s }", arg.string, body),
+    indent=2, output=FALSE)
   eval(parse(text=fn.string), where)
 }
 
@@ -1123,3 +1127,15 @@ parse_eval <- function(it, raw=NULL)
   invisible()
 }
 
+
+get_lr <- function(fn.name) {
+  fn <- NULL
+  frames <- sys.frames()
+  n <- length(frames)
+  while (n > 0) {
+    fn <- get0(fn.name, frames[[n]], inherits=FALSE)
+    if (! is.null(fn)) return(fn)
+    n <- n - 1
+  }
+  get(fn.name)
+}
