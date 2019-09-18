@@ -1,14 +1,14 @@
-d2b97043bf019458fc86ce7e486f0a62 *DESCRIPTION
+373a582631a87e126bb7a5fa163f78b1 *DESCRIPTION
 4dba0e973d7e8de75f1a968983057c4b *NAMESPACE
 1f1c9a9a097262fe0f7e3517eacefbee *R/duck.R
-2307f8f6e4d6b9c49dbd7fd57c91572a *R/framework.R
+cfd0f2889f5cae34c18e523732e9dc71 *R/framework.R
 8b2beceb6b96556f7c37a28e8ad9adfb *R/introspection.R
 c5d9ed228976ea81509c224506d65f2f *R/objects.R
 a2c77e08d37644ae9f2ad53a00a487de *man/UseFunction.Rd
 7954e4e489368550f3b029ae69756bc3 *man/duck.Rd
 c6780ccc995ee695572bc53982194816 *man/framework.Rd
 ad73256313b25f4a7ab5079204872ebd *man/introspection.Rd
-00993d2842494a20ba71ab34333c4b06 *man/lambda.r-package.Rd
+b58a34bfd70bb7158ca8bef2209bbfa3 *man/lambda.r-package.Rd
 32c094250bc918db7e6c9f09a5ef684d *tests/test-all.R
 d059162635282761bd3a0e9300b4af0e *tests/testit/test-auto_replace.1.R
 886a10e6211960d1c6e2f317269cb17a *tests/testit/test-auto_replace.2.R
