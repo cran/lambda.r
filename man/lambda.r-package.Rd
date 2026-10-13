@@ -23,8 +23,8 @@ and convenient syntax that reduces type clutter.
 \tabular{ll}{
 Package: \tab lambda.r\cr
 Type: \tab Package\cr
-Version: \tab 1.2.4\cr
-Date: \tab 2019-09-15\cr
+Version: \tab 1.2.6\cr
+Date: \tab 2026-10-13\cr
 License: \tab LGPL-3\cr
 LazyLoad: \tab yes\cr
 }
@@ -68,9 +68,10 @@ Functions can be defined using infix notation as well.
 For the function \code{g} above, it can be defined as an infix operator
 using
 
-x \%g\% y \%:=\% {
+\preformatted{ x \%g\% y \%:=\% {
   z <- x + y
   sqrt(z)
+}
 }
 }
 

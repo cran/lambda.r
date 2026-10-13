@@ -1,17 +1,23 @@
 Package: lambda.r
 Type: Package
 Title: Modeling Data with Functional Programming
-Version: 1.2.4
-Date: 2019-09-15
+Version: 1.2.6
+Date: 2026-10-13
 Depends: R (>= 3.0.0)
 Imports: formatR
 Suggests: testit
-Author: Brian Lee Yung Rowe
+Authors@R: person(given = c("Brian", "Lee", "Yung"),
+                      family = "Rowe",
+                      role = c("aut", "cre"),
+                      email = "r@zatonovo.com")
 Maintainer: Brian Lee Yung Rowe <r@zatonovo.com>
 Description: A language extension to efficiently write functional programs in R. Syntax extensions include multi-part function definitions, pattern matching, guard statements, built-in (optional) type safety.
 License: LGPL-3
 LazyLoad: yes
+URL: https://github.com/zatonovo/lambda.r
+BugReports: https://github.com/zatonovo/lambda.r/issues
 NeedsCompilation: no
-Packaged: 2019-09-15 08:08:15 UTC; brian
+Packaged: 2026-10-13 18:29:24 UTC; brian
+Author: Brian Lee Yung Rowe [aut, cre]
 Repository: CRAN
-Date/Publication: 2019-09-18 14:30:02 UTC
+Date/Publication: 2026-10-13 20:30:10 UTC
